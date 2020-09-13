@@ -3,16 +3,10 @@
 #include <type_traits>
 
 namespace intrusive {
-/*
-Тег по-умолчанию чтобы пользователям не нужно было
-придумывать теги, если они используют лишь одну базу
-list_element.
-*/
 struct default_tag;
 
 template<typename Tag = default_tag>
 struct list_element {
-  /* Отвязывает элемент из списка в котором он находится. */
   void unlink() {
     if (next != nullptr) {
       next->prev = prev;
@@ -27,6 +21,7 @@ struct list_element {
   ~list_element() {
     unlink();
   }
+
   list_element* next = nullptr;
   list_element* prev = nullptr;
 };
@@ -148,13 +143,11 @@ struct list {
     while (!empty()) {
       pop_back();
     }
-  };
+  }
 
-  /*
-  Поскольку вставка изменяет данные в list_element
-  мы принимаем неконстантный T&.
-  */
-  void push_back(T& element) noexcept { insert(end(), element); };
+  void push_back(T& element) noexcept {
+    insert(end(), element);
+  }
 
   void pop_back() noexcept {
     static_cast<list_element<Tag>*>(&back())->unlink();
