@@ -105,22 +105,27 @@ struct list {
   using const_iterator = list_iterator<true>;
 
   list() noexcept {
-    null_node = new list_element<Tag>;
-    null_node->prev = null_node;
-    null_node->next = null_node;
+    null_node.prev = &null_node;
+    null_node.next = &null_node;
   }
 
   list(list const&) = delete;
   list(list&& other) noexcept: list() {
     using std::swap;
-    swap(null_node, other.null_node);
+    swap(null_node.prev, other.null_node.prev);
+    swap(null_node.prev->next, other.null_node.prev->next);
+    swap(null_node.next, other.null_node.next);
+    swap(null_node.next->prev, other.null_node.next->prev);
   }
 
   list& operator=(list const&) = delete;
   list& operator=(list&& other) noexcept {
     if (this != &other) {
       using std::swap;
-      swap(null_node, other.null_node);
+      swap(null_node.prev, other.null_node.prev);
+      swap(null_node.prev->next, other.null_node.prev->next);
+      swap(null_node.next, other.null_node.next);
+      swap(null_node.next->prev, other.null_node.next->prev);
       other.clear();
     }
     return *this;
@@ -128,7 +133,6 @@ struct list {
 
   ~list() {
     clear();
-    delete null_node;
   }
 
   void clear() noexcept {
@@ -146,11 +150,11 @@ struct list {
   }
 
   T& back() noexcept {
-    return *(static_cast<T*>(null_node->prev));
+    return *(static_cast<T*>(null_node.prev));
   }
 
   T const& back() const noexcept {
-    return *(static_cast<T const*>(null_node->prev));
+    return *(static_cast<T const*>(null_node.prev));
   }
 
   void push_front(T& element) noexcept {
@@ -162,31 +166,31 @@ struct list {
   }
 
   T& front() noexcept {
-    return *(static_cast<T*>(null_node->next));
+    return *(static_cast<T*>(null_node.next));
   }
 
   T const& front() const noexcept {
-    return *(static_cast<T*>(null_node->next));
+    return *(static_cast<T*>(null_node.next));
   }
 
   bool empty() const noexcept {
-    return null_node->next == null_node && null_node->prev == null_node;
+    return null_node.next == &null_node && null_node.prev == &null_node;
   }
 
   iterator begin() noexcept {
-    return iterator(null_node->next);
+    return iterator(null_node.next);
   }
 
   const_iterator begin() const noexcept {
-    return const_iterator(null_node->next);
+    return const_iterator(null_node.next);
   }
 
   iterator end() noexcept {
-    return iterator(null_node);
+    return iterator(&null_node);
   }
 
   const_iterator end() const noexcept {
-    return const_iterator(null_node);
+    return const_iterator(&null_node);
   }
 
   iterator insert(const_iterator pos, T& element) noexcept {
@@ -229,6 +233,6 @@ struct list {
   }
 
  private:
-  list_element<Tag>* null_node;
+  list_element<Tag> null_node;
 };
 } // namespace intrusive
