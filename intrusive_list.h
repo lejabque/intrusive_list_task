@@ -38,12 +38,6 @@ struct list {
     using difference_type = std::ptrdiff_t;
     using pointer = value_type*;
     using reference = value_type&;
-    using ptr_type = std::conditional_t<IsConst,
-                                        const list_element<Tag>,
-                                        list_element<Tag>>;
-    using iterator_type = std::conditional_t<IsConst,
-                                             const value_type,
-                                             value_type>;
 
     list_iterator() = default;
 
@@ -81,15 +75,22 @@ struct list {
       return element != other.element;
     }
 
-    iterator_type& operator*() const {
-      return *static_cast<iterator_type*>(element);
+    auto& operator*() const {
+      return *static_cast<std::conditional_t<IsConst,
+                                             const value_type,
+                                             value_type>*>(element);
     }
 
-    iterator_type* operator->() const {
-      return static_cast<iterator_type*>(element);
+    auto* operator->() const {
+      return static_cast<std::conditional_t<IsConst,
+                                            const value_type,
+                                            value_type>*>(element);
     }
 
    private:
+    using ptr_type = std::conditional_t<IsConst,
+                                        const list_element<Tag>,
+                                        list_element<Tag>>;
     explicit list_iterator(ptr_type* element)
         : element(element) {}
 
