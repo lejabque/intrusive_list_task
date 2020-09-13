@@ -40,6 +40,7 @@ struct list {
     using reference = value_type&;
 
     list_iterator() = default;
+    list_iterator(const list_iterator&) = default;
 
     template<bool OtherConst, class = std::enable_if_t<IsConst && !OtherConst>>
     list_iterator(const list_iterator<OtherConst>& other)
@@ -109,8 +110,7 @@ struct list {
     null_node.next = &null_node;
   }
 
-  list(list const&) = delete;
-  list(list&& other) noexcept: list() {
+  void swap(list& other) {
     using std::swap;
     swap(null_node.prev, other.null_node.prev);
     swap(null_node.prev->next, other.null_node.prev->next);
@@ -118,14 +118,15 @@ struct list {
     swap(null_node.next->prev, other.null_node.next->prev);
   }
 
+  list(list const&) = delete;
+  list(list&& other) noexcept: list() {
+    swap(other);
+  }
+
   list& operator=(list const&) = delete;
   list& operator=(list&& other) noexcept {
     if (this != &other) {
-      using std::swap;
-      swap(null_node.prev, other.null_node.prev);
-      swap(null_node.prev->next, other.null_node.prev->next);
-      swap(null_node.next, other.null_node.next);
-      swap(null_node.next->prev, other.null_node.next->prev);
+      swap(other);
       other.clear();
     }
     return *this;
@@ -229,7 +230,7 @@ struct list {
 
  private:
   static list_element<Tag>* iterator_to_ptr(const_iterator p) {
-    return const_cast<list_element<Tag>*>(static_cast<list_element<Tag> const*>(&*p));;
+    return const_cast<list_element<Tag>*>(static_cast<list_element<Tag> const*>(&*p));
   }
 
  private:
