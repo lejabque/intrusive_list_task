@@ -47,18 +47,9 @@ struct list {
 
     list_iterator() = default;
 
-    list_iterator(const list_iterator&) = default;
-    list_iterator& operator=(const list_iterator&) = default;
-
-    template<bool WasConst, class = std::enable_if_t<IsConst && !WasConst>>
-    list_iterator(const list_iterator<WasConst>& rhs)
-        : element(rhs.element) {}
-
-    template<bool IsConst_ = IsConst, class = std::enable_if_t<IsConst_>>
-    list_iterator& operator=(const list_iterator<false>& rhs) {
-      element = rhs.element;
-      return *this;
-    }
+    template<bool OtherConst, class = std::enable_if_t<IsConst && !OtherConst>>
+    list_iterator(const list_iterator<OtherConst>& other)
+        : element(other.element) {}
 
     list_iterator& operator++() {
       element = element->next;
