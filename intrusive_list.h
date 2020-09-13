@@ -86,7 +86,6 @@ struct list {
                                             const value_type,
                                             value_type>*>(element);
     }
-
    private:
     using ptr_type = std::conditional_t<IsConst,
                                         const list_element<Tag>,
@@ -94,6 +93,7 @@ struct list {
     explicit list_iterator(ptr_type* element)
         : element(element) {}
 
+   private:
     template<bool IsOtherConst> friend
     class list_iterator;
     friend class list;
