@@ -36,8 +36,12 @@ struct list {
     using iterator_category = std::bidirectional_iterator_tag;
     using value_type = std::remove_const_t<T>;
     using difference_type = std::ptrdiff_t;
-    using pointer = value_type*;
-    using reference = value_type&;
+    using pointer = std::conditional_t<IsConst,
+                                       const value_type,
+                                       value_type>*;
+    using reference = std::conditional_t<IsConst,
+                                         const value_type,
+                                         value_type>&;
 
     list_iterator() = default;
     list_iterator(const list_iterator&) = default;
@@ -76,16 +80,12 @@ struct list {
       return element != other.element;
     }
 
-    auto& operator*() const {
-      return *static_cast<std::conditional_t<IsConst,
-                                             const value_type,
-                                             value_type>*>(element);
+    reference operator*() const {
+      return *static_cast<pointer>(element);
     }
 
-    auto* operator->() const {
-      return static_cast<std::conditional_t<IsConst,
-                                            const value_type,
-                                            value_type>*>(element);
+    pointer operator->() const {
+      return static_cast<pointer>(element);
     }
    private:
     using ptr_type = std::conditional_t<IsConst,
@@ -147,7 +147,7 @@ struct list {
   }
 
   void pop_back() noexcept {
-    static_cast<list_element<Tag>*>(&back())->unlink();
+    static_cast<list_element<Tag>&>(back()).unlink();
   }
 
   T& back() noexcept {
@@ -163,7 +163,7 @@ struct list {
   }
 
   void pop_front() noexcept {
-    front().unlink();
+    static_cast<list_element<Tag>&>(front()).unlink();
   }
 
   T& front() noexcept {
